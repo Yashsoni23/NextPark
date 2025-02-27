@@ -69,9 +69,7 @@ function Reports() {
   return <div className="p-5">Reports & Analytics</div>;
 }
 
-export default function App({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
+export default function App() {
   return (
     <div>
       <HomePage />
