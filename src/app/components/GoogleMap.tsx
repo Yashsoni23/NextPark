@@ -15,6 +15,7 @@ import {
   Button,
   useDisclosure,
   Input,
+  addToast,
 } from "@heroui/react";
 import ParkingUI from "./ParkingForm";
 import ParkingBookingForm from "./ParkingForm";
@@ -67,18 +68,11 @@ export default function GoogleMapComponent() {
     isOpen: isParkingFormOpen,
     onOpen: onParkingFormOpen,
     onOpenChange: onParkingFormOpenChange,
+    onClose: onParkingFormClose,
   } = useDisclosure();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [userDetails, setUserDetails] = useState({
-    name: "",
-    phone: "",
-    vNumber: "",
-  });
-  const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [backdrop, setBackdrop] = useState<any>("opaque");
-
   const handleSearch = async (event: any) => {
     event.preventDefault();
     const searchQuery = event.target.search.value;
@@ -100,11 +94,21 @@ export default function GoogleMapComponent() {
         setFilteredMarkers(filtered);
         console.log({ filtered });
       } else {
-        alert("Location not found!");
+        addToast({
+          title: "Location Not Found",
+          variant: "flat",
+          color: "danger",
+        });
       }
     });
   };
 
+  const handleParkingFormClose = () => {
+    onClose();
+    onParkingFormClose();
+    setSelectedParking(null);
+    setSelectedSlot(null);
+  };
   const handleSlotClick = (index: number) => {
     setSelectedSlot(index);
   };
@@ -118,11 +122,11 @@ export default function GoogleMapComponent() {
           onSubmit={handleSearch}
           className="flex justify-center p-5 items-center w-full  gap-2"
         >
-          <Input
+          <input
             type="text"
             name="search"
             placeholder="Search area..."
-            className="border  shadow-lg rounded-md sm:w-2/3 max-sm:w-full"
+            className="border p-2 focus:outline-black/15  pl-5  shadow-lg rounded-md sm:w-2/3 max-sm:w-full"
           />
           <Button
             color="secondary"
@@ -145,10 +149,7 @@ export default function GoogleMapComponent() {
             key={parking.id}
             position={{ lat: parking.lat, lng: parking.lng }}
             onClick={() => {
-              setSelectedParking((prev) =>
-                prev?.id === parking.id ? null : parking
-              );
-              onOpen();
+              setSelectedParking(parking);
             }}
           />
         ))}
@@ -159,16 +160,15 @@ export default function GoogleMapComponent() {
             onCloseClick={() => {
               setSelectedParking(null);
               setIsDialogOpen(false);
-
               onClose();
             }}
           >
-            <div>
+            <div className="">
               <h3 className="text-lg font-bold">{selectedParking.name}</h3>
               <p>Capacity: {selectedParking.capacity}</p>
               <button
-                className="bg-blue-500 text-white px-3 py-1 rounded mt-2"
-                onClick={() => setIsDialogOpen(true)}
+                className="bg-secondary-600 text-white px-3 py-1 rounded mt-2"
+                onClick={() => onOpen()}
               >
                 Book Now
               </button>
@@ -178,97 +178,100 @@ export default function GoogleMapComponent() {
         <ParkingBookingForm
           isOpen={isParkingFormOpen}
           onOpen={onParkingFormOpen}
+          onClose={handleParkingFormClose}
           onOpenChange={onParkingFormOpenChange}
+          selectedParking={selectedParking}
+          selectedSlot={selectedSlot}
         />
       </GoogleMap>
 
-      {isDialogOpen && selectedParking && (
-        <Modal
-          scrollBehavior="outside"
-          backdrop={backdrop}
-          isOpen={isOpen}
-          onClose={() => {
-            onClose();
-            setSelectedParking(null);
-          }}
-          placement="bottom"
-          //   size="xl"
-        >
-          <ModalContent>
-            {(onClose) => (
-              <>
-                <ModalHeader className="text-xl font-bold mb-3">
-                  {selectedParking.name}
-                </ModalHeader>
-                <div className="flex max-sm:flex-col  sm:pr-8">
-                  <ModalBody className="text-sm">
-                    <p>
-                      <strong>Opening Time:</strong>{" "}
-                      {selectedParking.openingTime}
-                    </p>
-                    <p>
-                      <strong>Closing Time:</strong>{" "}
-                      {selectedParking.closingTime}
-                    </p>
-                    <p>
-                      <strong>Total Slots:</strong> {selectedParking.capacity}
-                    </p>
-                    <p>
-                      <strong>Filled Slots:</strong>{" "}
-                      {selectedParking.filledSlots}
-                    </p>
-                    <p>
-                      <strong>Available Slots:</strong>{" "}
-                      {selectedParking.capacity - selectedParking.filledSlots}
-                    </p>
-                  </ModalBody>
+      {/* {isDialogOpen && selectedParking && ( */}
+      <Modal
+        scrollBehavior="outside"
+        backdrop={"opaque"}
+        isOpen={isOpen}
+        onClose={() => {
+          onClose();
+          setSelectedParking(null);
+        }}
+        placement="bottom"
+        //   size="xl"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="text-xl font-bold mb-3">
+                {selectedParking.name}
+              </ModalHeader>
+              <div className="flex max-sm:flex-col  sm:pr-8">
+                <ModalBody className="text-sm">
+                  <p>
+                    <strong>Opening Time:</strong> {selectedParking.openingTime}
+                  </p>
+                  <p>
+                    <strong>Closing Time:</strong> {selectedParking.closingTime}
+                  </p>
+                  <p>
+                    <strong>Total Slots:</strong> {selectedParking.capacity}
+                  </p>
+                  <p>
+                    <strong>Filled Slots:</strong> {selectedParking.filledSlots}
+                  </p>
+                  <p>
+                    <strong>Available Slots:</strong>{" "}
+                    {selectedParking.capacity - selectedParking.filledSlots}
+                  </p>
+                </ModalBody>
 
-                  <div className="grid grid-cols-5 max-sm:grid-cols-7 m-auto  gap-2 my-3">
-                    {Array.from({ length: selectedParking.capacity }).map(
-                      (_, index) => (
-                        <button
-                          type="button"
-                          title="Slot"
-                          key={index}
-                          className={`w-8 h-8 max-sm:w-10 max-sm:h-10 border rounded-md ${
-                            index < selectedParking.filledSlots
-                              ? "bg-red-500"
-                              : selectedSlot === index
-                              ? "bg-blue-500"
-                              : "bg-green-500"
-                          }`}
-                          disabled={index < selectedParking.filledSlots}
-                          onClick={() => handleSlotClick(index)}
-                        ></button>
-                      )
-                    )}
-                  </div>
+                <div className="grid grid-cols-5 max-sm:grid-cols-7 m-auto  gap-2 my-3">
+                  {Array.from({ length: selectedParking.capacity }).map(
+                    (_, index) => (
+                      <button
+                        type="button"
+                        title="Slot"
+                        key={index}
+                        className={`w-8 h-8 max-sm:w-10 max-sm:h-10 border rounded-md ${
+                          index < selectedParking.filledSlots
+                            ? "bg-red-500"
+                            : selectedSlot === index
+                            ? "bg-blue-500"
+                            : "bg-green-500"
+                        }`}
+                        disabled={index < selectedParking.filledSlots}
+                        onClick={() => handleSlotClick(index)}
+                      ></button>
+                    )
+                  )}
                 </div>
-                <ModalFooter>
-                  <Button
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md w-full"
-                    onPress={onParkingFormOpen}
-                  >
-                    Continue Booking
-                  </Button>
+              </div>
+              <ModalFooter>
+                <Button
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md w-full"
+                  onPress={() => {
+                    onParkingFormOpen();
+                    setIsDialogOpen(false);
+                  }}
+                >
+                  Continue Booking
+                </Button>
 
-                  <Button
-                    className="bg-red-500 text-white px-4 py-2 rounded-md  w-full"
-                    onPress={() => setIsDialogOpen(false)}
-                  >
-                    Close
-                  </Button>
-                </ModalFooter>
-                {/* {isBookingConfirmed && (
+                <Button
+                  className="bg-red-500 text-white px-4 py-2 rounded-md  w-full"
+                  onPress={() => onClose()}
+                >
+                  Close
+                </Button>
+              </ModalFooter>
+              {/* {isBookingConfirmed && (
               <div className="mt-3 p-3 bg-green-100 border border-green-500 rounded-md text-center">
               ✅ Booking Confirmed for Slot #{selectedSlot + 1}!
             </div>
           )} */}
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      )}
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      {/* )} */}
     </LoadScript>
   );
 }
