@@ -12,6 +12,7 @@ import {
   Radio,
   Input,
   Card,
+  addToast,
 } from "@heroui/react";
 import QRCode from "react-qr-code";
 import html2canvas from "html2canvas";
@@ -24,6 +25,7 @@ export default function ParkingBookingForm({
   selectedParking,
   selectedSlot,
 }: any) {
+  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -50,7 +52,7 @@ export default function ParkingBookingForm({
         duration: 4,
         location: selectedParking?.name,
         slot: selectedSlot,
-        totalAmount: "$20",
+        totalAmount: "20",
         endTime: "19:00",
       });
     }
@@ -78,7 +80,7 @@ export default function ParkingBookingForm({
     setFormData({
       ...formData,
       duration,
-      totalAmount: `$${duration * 5}`,
+      totalAmount: `${duration * 5}`,
       endTime: calculateEndTime(formData.time, duration),
     });
   };
@@ -104,7 +106,47 @@ export default function ParkingBookingForm({
       link.click();
     }
   };
+  const handleCheckout = async () => {
+    setLoading(true);
 
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: formData.totalAmount,
+        }),
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      if (data.success) {
+        addToast({
+          title: "Payment done successfully!!! ",
+          color: "success",
+          size: "lg",
+          variant: "solid",
+        });
+        setStep(3); // Move to the next step to show ticket
+      } else {
+        addToast({
+          title: "Payment Failed. Please try again. ",
+          color: "danger",
+          size: "lg",
+          variant: "solid",
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      addToast({
+        title: "An error occurred. Please try again. ",
+        color: "danger",
+        size: "lg",
+        variant: "solid",
+      });
+    }
+  };
   return (
     <>
       {isOpen && (
@@ -162,7 +204,7 @@ export default function ParkingBookingForm({
                           ))}
                         </div>
                         <p className="mt-4 text-lg font-semibold">
-                          Total Amount: {formData.totalAmount}
+                          Total Amount: ${formData.totalAmount}
                         </p>
                         <p className="mt-2 text-lg">
                           Parking Time: {formData.time} to {formData.endTime}
@@ -227,8 +269,14 @@ export default function ParkingBookingForm({
                             >
                               Close
                             </Button>
-                            <Button color="primary" onPress={() => setStep(3)}>
-                              Checkout
+                            <Button
+                              color="primary"
+                              onPress={() => {
+                                handleCheckout();
+                              }}
+                              disabled={loading}
+                            >
+                              {loading ? "Processing..." : "Pay Now"}
                             </Button>
                           </div>
                         </div>
