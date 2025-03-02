@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../config/firebase.config";
 import { addToast } from "@heroui/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 // User data type interface
 interface UserType {
@@ -36,6 +36,7 @@ export const AuthContextProvider = ({
   // Define the constants for user and loading state
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const pathname = usePathname();
   const provider = new GoogleAuthProvider();
   const router = useRouter();
   // Update the state depending on auth
@@ -48,7 +49,7 @@ export const AuthContextProvider = ({
           displayName: user.displayName,
           photoURL: user.photoURL,
         });
-        router.push("/");
+        pathname === "/login" && router.push("/");
       } else {
         setUser(null);
       }

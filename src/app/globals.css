@@ -23,6 +23,7 @@ body {
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
-html::-webkit-scrollbar {
+html::-webkit-scrollbar,
+.slots-con::-webkit-scrollbar {
   display: none;
 }

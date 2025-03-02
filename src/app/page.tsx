@@ -12,11 +12,13 @@ import { TbEyeFilled } from "react-icons/tb";
 import Login from "./components/Login";
 import CarCard from "./components/CarCard";
 import HeroInfoCard from "./components/HeroInfoCard";
+import GoogleMapComponent from "./components/GoogleMap";
 function HomePage() {
   return (
-    <div className=" px-5 justify-between flex ">
-      <HeroInfoCard />
-      <CarCard />
+    <div className={`px-5  justify-between rounded-md h-[80vh] `}>
+      {/* <HeroInfoCard /> */}
+      {/* <CarCard /> */}
+      <GoogleMapComponent />
     </div>
   );
 }
