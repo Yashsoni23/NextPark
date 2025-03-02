@@ -84,7 +84,7 @@ export default function GoogleMapComponent() {
         const { lat, lng } = results[0].geometry.location;
         setMapCenter({ lat: lat(), lng: lng() });
 
-        const filtered = parkingLocations.filter((parking) => {
+        const filtered: any = parkingLocations.filter((parking) => {
           const distance = Math.sqrt(
             Math.pow(parking.lat - lat(), 2) + Math.pow(parking.lng - lng(), 2)
           );
@@ -109,7 +109,7 @@ export default function GoogleMapComponent() {
     setSelectedParking(null);
     setSelectedSlot(null);
   };
-  const handleSlotClick = (index: number) => {
+  const handleSlotClick = (index: number | any) => {
     setSelectedSlot(index);
   };
 
@@ -144,7 +144,7 @@ export default function GoogleMapComponent() {
         zoom={13}
         center={mapCenter}
       >
-        {filteredMarkers.map((parking) => (
+        {filteredMarkers.map((parking: any) => (
           <Marker
             key={parking.id}
             position={{ lat: parking.lat, lng: parking.lng }}

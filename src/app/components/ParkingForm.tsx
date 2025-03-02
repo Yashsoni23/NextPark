@@ -59,15 +59,15 @@ export default function ParkingBookingForm({
   }, [isOpen, selectedSlot]);
 
   console.log({ selectedParking, selectedSlot });
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleVehicleType = (type) => {
+  const handleVehicleType = (type: any) => {
     setFormData({ ...formData, vehicleType: type });
   };
 
-  const handleTimeChange = (e) => {
+  const handleTimeChange = (e: any) => {
     const newTime = e.target.value;
     setFormData({
       ...formData,
@@ -76,7 +76,7 @@ export default function ParkingBookingForm({
     });
   };
 
-  const handleDurationChange = (duration) => {
+  const handleDurationChange = (duration: any) => {
     setFormData({
       ...formData,
       duration,
@@ -85,7 +85,7 @@ export default function ParkingBookingForm({
     });
   };
 
-  const calculateEndTime = (startTime, duration) => {
+  const calculateEndTime = (startTime: any, duration: any) => {
     let [hours, minutes] = startTime.split(":").map(Number);
     hours += duration;
     if (hours >= 24) hours -= 24;
