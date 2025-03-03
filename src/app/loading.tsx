@@ -1,16 +1,16 @@
 "use client";
 import React from "react";
-import LoadingSkeleton from "./components/LoadingSkeleton";
 import { Spinner } from "@heroui/react";
 
-const Loading = () => {
+const Loading = ({ text }: { text?: string }) => {
   return (
-    <div className="flex justify-center items-center w-full h-screen ">
+    <div className="flex flex-col gap-4 justify-center items-center w-full h-screen ">
       <Spinner
         classNames={{ label: "text-secondary " }}
         variant="default"
         size="lg"
       />
+      <h1 className="text-lg font-bold">{text}</h1>
       {/* <LoadingSkeleton /> */}
     </div>
   );

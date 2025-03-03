@@ -14,6 +14,7 @@ import {
 } from "@heroui/react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../context/firebase";
+import { useMemo } from "react";
 
 export const AcmeLogo = () => {
   return <h1 className="font-bold text-secondary-600 text-3xl">NextPark</h1>;
@@ -22,15 +23,21 @@ export const AcmeLogo = () => {
 export default function Nav() {
   const firebase = useAuth();
   const pathname = usePathname();
-  console.log(firebase?.user?.photoURL);
 
-  const navData = [
-    { name: "Home", value: "/" },
-    { name: "My Bookings", value: "/mybookings" },
-    { name: "Profile & Settings", value: "/profile&settings" },
-    { name: "Contact Us", value: "/contact-us" },
-    { name: "FAQ", value: "/faq" },
-  ];
+  // Memoize navigation links
+  const navData = useMemo(
+    () => [
+      { name: "Home", value: "/" },
+      { name: "My Bookings", value: "/my-bookings" },
+      { name: "Profile & Settings", value: "/profile&settings" },
+      { name: "Contact Us", value: "/contact-us" },
+      { name: "FAQ", value: "/faq" },
+    ],
+    []
+  );
+
+  // Memoize the user state to prevent unnecessary re-renders
+  const user = useMemo(() => firebase?.user, [firebase?.user]);
 
   return (
     <Navbar>
@@ -38,26 +45,27 @@ export default function Nav() {
         <AcmeLogo />
       </NavbarContent>
 
+      {/* Visible on Large Screens */}
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        {navData.map((item: { name: string; value: string }) => (
-          <NavbarItem key={item.value} isActive={pathname === item.value}>
+        {navData.map(({ name, value }) => (
+          <NavbarItem key={value} isActive={pathname === value}>
             <Link
-              color={pathname === item.value ? "secondary" : "foreground"}
-              href={item.value}
+              color={pathname === value ? "secondary" : "foreground"}
+              href={value}
             >
-              {item.name}
+              {name}
             </Link>
           </NavbarItem>
         ))}
       </NavbarContent>
 
-      {!(pathname === "/login") && !firebase.user && (
+      {/* Login Button for Guests */}
+      {!user && pathname !== "/login" && (
         <NavbarContent justify="end">
           <NavbarItem>
             <Button
               as={Link}
               href="/login"
-              title="Explore"
               className="w-max px-4 font-bold text-slate-200 bg-secondary-500"
             >
               Login
@@ -66,7 +74,8 @@ export default function Nav() {
         </NavbarContent>
       )}
 
-      {firebase.user && (
+      {/* User Profile & Logout */}
+      {user && (
         <NavbarContent as="div" justify="end">
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
@@ -75,23 +84,30 @@ export default function Nav() {
                 as="button"
                 className="transition-transform"
                 color="secondary"
-                name={firebase?.user?.displayName || "User"}
+                name={user.displayName || "User"}
                 size="sm"
                 src={
-                  firebase?.user?.photoURL
-                    ? firebase?.user?.photoURL
-                    : "https://i.pinimg.com/736x/c6/34/60/c6346030acb7a780af81803c84a06680.jpghttps://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCUJ-GVxj9ccx2tR1zUe1nJDRjtsDjAlYANA&s"
+                  user.photoURL ||
+                  "https://i.pinimg.com/736x/c6/34/60/c6346030acb7a780af81803c84a06680.jpg"
                 }
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2">
-                <p className="font-semibold">Signed in as</p>
-                <p className="font-semibold">{firebase?.user?.email}</p>
+                <p className="font-semibold text-secondary-600">Signed in as</p>
+                <p className="font-semibold text-secondary-600">{user.email}</p>
               </DropdownItem>
+              <>
+                {navData.map(({ name, value }) => (
+                  <DropdownItem className="sm:hidden" key={value}>
+                    <Link href={value}>{name}</Link>
+                  </DropdownItem>
+                ))}
+              </>
               <DropdownItem
                 key="logout"
                 color="danger"
+                className="text-danger"
                 onPress={() => firebase?.logOut()}
               >
                 Log Out

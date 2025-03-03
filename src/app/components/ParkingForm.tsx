@@ -108,27 +108,30 @@ export default function ParkingBookingForm({
   };
   const handleCheckout = async () => {
     setLoading(true);
-
+    localStorage.setItem("bookingData", JSON.stringify(formData)); // Store booking details
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: formData.totalAmount,
+          success_url: `${window.location.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${window.location.origin}/payment-failed`,
         }),
       });
 
       const data = await response.json();
       setLoading(false);
 
-      if (data.success) {
+      if (data.url) {
+        window.location.href = data.url;
+
         addToast({
           title: "Payment done successfully!!! ",
           color: "success",
           size: "lg",
           variant: "solid",
         });
-        setStep(3); // Move to the next step to show ticket
       } else {
         addToast({
           title: "Payment Failed. Please try again. ",
@@ -272,11 +275,10 @@ export default function ParkingBookingForm({
                             <Button
                               color="primary"
                               onPress={() => {
-                                handleCheckout();
+                                setStep(3);
                               }}
-                              disabled={loading}
                             >
-                              {loading ? "Processing..." : "Pay Now"}
+                              Checkout
                             </Button>
                           </div>
                         </div>
@@ -289,9 +291,9 @@ export default function ParkingBookingForm({
                       <ModalHeader>Payment Details</ModalHeader>
                       <ModalBody>
                         <p className="font-medium">{formData.location}</p>
-                        <p className="text-gray-600">{formData.slot}</p>
+                        <p className="text-gray-600">Slot #{formData.slot}</p>
                         <p className="mt-2 font-bold text-xl">
-                          {formData.totalAmount}
+                          ${formData.totalAmount}
                         </p>
                       </ModalBody>
 
@@ -312,8 +314,12 @@ export default function ParkingBookingForm({
                             >
                               Close
                             </Button>
-                            <Button color="primary" onPress={() => setStep(4)}>
-                              Pay Now
+                            <Button
+                              color="primary"
+                              onPress={() => handleCheckout()}
+                              disabled={loading}
+                            >
+                              {loading ? "Processing..." : "Pay Now"}
                             </Button>
                           </div>
                         </div>
