@@ -6,11 +6,11 @@ import React from "react";
 const CarCard = () => {
   const pathname = usePathname();
   return (
-    <div className="relative w-[25rem] h-max px-5 ">
+    <div className="relative sm:w-[25rem]  max-sm:h-1/4 px-5 ">
       <Image
-        isBlurred
+        isBlurred={window.innerWidth > 450 ? true : false}
         alt="HeroUI Album Cover"
-        className={`m-5 absolute z-10 top-40  -left-32 ${
+        className={`sm:m-5 absolute max-sm:w-48 z-10 sm:top-40 max-sm:top-28 h-max  max-sm:left-24 -left-32 ${
           pathname === "/login" ? "scale-x-[-1] left-32" : "-left-32"
         }`}
         src="car.png"
@@ -19,10 +19,8 @@ const CarCard = () => {
       <Image
         isBlurred
         alt="HeroUI Album Cover"
-        className="my-5 z-0 "
+        className="my-5 z-0 sm:w-full max-sm:w-2/ sm:h-[450px] max-sm:h-1/2"
         src="nature.avif"
-        width={"100%"}
-        height={450}
       />
     </div>
   );

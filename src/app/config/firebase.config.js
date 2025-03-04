@@ -14,8 +14,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-if (!getApps().length) {
-  initializeApp(firebaseConfig);
-}
+// if (!getApps().length) {
+export const app = initializeApp(firebaseConfig);
+// }
 // Initialize Firebase auth
 export const auth = getAuth();

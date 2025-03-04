@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   GoogleMap,
   LoadScript,
@@ -19,6 +19,8 @@ import {
 } from "@heroui/react";
 import ParkingUI from "./ParkingForm";
 import ParkingBookingForm from "./ParkingForm";
+import { fetchParkingLocations } from "../api/ParkingApi";
+
 const mapContainerStyle = {
   width: "100%",
   height: "100%",
@@ -73,6 +75,9 @@ export default function GoogleMapComponent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [parkings, setParkings] = useState<any>([]);
+
   const handleSearch = async (event: any) => {
     event.preventDefault();
     const searchQuery = event.target.search.value;
@@ -84,7 +89,7 @@ export default function GoogleMapComponent() {
         const { lat, lng } = results[0].geometry.location;
         setMapCenter({ lat: lat(), lng: lng() });
 
-        const filtered: any = parkingLocations.filter((parking) => {
+        const filtered: any = parkings.filter((parking: any) => {
           const distance = Math.sqrt(
             Math.pow(parking.lat - lat(), 2) + Math.pow(parking.lng - lng(), 2)
           );
@@ -112,7 +117,19 @@ export default function GoogleMapComponent() {
   const handleSlotClick = (index: number | any) => {
     setSelectedSlot(index);
   };
-
+  // API Calls
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await fetchParkingLocations();
+        setParkings(data);
+        console.log({ data });
+      } catch (err: any) {
+        console.log(err.message);
+      }
+    };
+    loadData();
+  }, []);
   return (
     <LoadScript
       googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
@@ -203,7 +220,7 @@ export default function GoogleMapComponent() {
               <ModalHeader className="text-xl font-bold mb-3">
                 {selectedParking.name}
               </ModalHeader>
-              <div className="flex max-sm:flex-col  sm:pr-8">
+              <div className="flex flex-col  sm:pr-8">
                 <ModalBody className="text-sm">
                   <p>
                     <strong>Opening Time:</strong> {selectedParking.openingTime}
@@ -230,16 +247,18 @@ export default function GoogleMapComponent() {
                         type="button"
                         title="Slot"
                         key={index}
-                        className={`w-8 h-8 max-sm:w-10 max-sm:h-10 border rounded-md ${
-                          index < selectedParking.filledSlots
+                        className={`w-14 h-14 max-sm:w-10 max-sm:h-10 border rounded-md ${
+                          1 + index < selectedParking.filledSlots
                             ? "bg-red-500"
-                            : selectedSlot === index
+                            : selectedSlot === index + 1
                             ? "bg-blue-500"
                             : "bg-green-500"
                         }`}
-                        disabled={index < selectedParking.filledSlots}
-                        onClick={() => handleSlotClick(index)}
-                      ></button>
+                        disabled={index + 1 < selectedParking.filledSlots}
+                        onClick={() => handleSlotClick(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
                     )
                   )}
                 </div>
@@ -262,11 +281,6 @@ export default function GoogleMapComponent() {
                   Close
                 </Button>
               </ModalFooter>
-              {/* {isBookingConfirmed && (
-              <div className="mt-3 p-3 bg-green-100 border border-green-500 rounded-md text-center">
-              ✅ Booking Confirmed for Slot #{selectedSlot + 1}!
-            </div>
-          )} */}
             </>
           )}
         </ModalContent>

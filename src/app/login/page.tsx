@@ -4,7 +4,7 @@ import Login from "../components/Login";
 
 const Page = () => {
   return (
-    <div className=" px-5 justify-between flex ">
+    <div className=" px-5 sm:justify-between flex max-sm:flex-col ">
       <CarCard />
       <Login />
     </div>

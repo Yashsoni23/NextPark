@@ -15,6 +15,7 @@ export async function GET(req: Request) {
     return Response.json({
       payment_status: session.payment_status,
       session_id: session.id,
+      transaction_id: session.id,
     });
   } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 });

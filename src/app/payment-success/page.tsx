@@ -5,6 +5,8 @@ import QRCode from "react-qr-code";
 import html2canvas from "html2canvas";
 import { addToast, Button, Card } from "@heroui/react";
 import Loading from "../loading";
+import { createBooking } from "../api/BookingApi";
+import { useAuth } from "../context/firebase";
 
 export default function SuccessPage() {
   const searchParams = useSearchParams();
@@ -15,6 +17,7 @@ export default function SuccessPage() {
   const qrRef = useRef(null);
   const toastShownRef = useRef(false);
   const router = useRouter();
+  const firebase = useAuth();
   useEffect(() => {
     async function fetchSession() {
       if (!sessionId) return;
@@ -24,9 +27,29 @@ export default function SuccessPage() {
         );
         const data = await response.json();
         setSessionData(data);
-        setFormData(JSON.parse(localStorage.getItem("bookingData") as any));
+        const bookingData: any = JSON.parse(
+          `${localStorage.getItem("bookingData")}`
+        );
+        setFormData(bookingData);
         setLoading(false);
         if (!toastShownRef.current) {
+          createBooking({
+            userId: firebase?.user?.uid,
+            parkingId: bookingData.parkingId,
+            name: bookingData.name,
+            email: firebase?.user?.email,
+            mobileNumber: bookingData.mobileNumber,
+            vehicleNumber: bookingData.vehicleNumber,
+            vehicleType: bookingData.vehicleType,
+            location: bookingData.location,
+            slot: bookingData.slot,
+            duration: bookingData.duration,
+            date: new Date().toISOString().split("T")[0],
+            startTime: bookingData.startTime,
+            endTime: bookingData.endTime,
+            transactionId: data?.transaction_id,
+            sessionId: data?.session_id,
+          });
           addToast({
             title: "Payment Successful 🎉🎉🎉",
             color: "success",
@@ -95,7 +118,9 @@ export default function SuccessPage() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Vehicle Number</p>
-                    <p className="text-lg font-bold">{formData?.vehicle}</p>
+                    <p className="text-lg font-bold">
+                      {formData?.vehicleNumber}
+                    </p>
                   </div>
                 </div>
 
@@ -122,7 +147,7 @@ export default function SuccessPage() {
                   <div>
                     <p className="text-sm font-semibold">Time</p>
                     <p className="text-lg font-bold">
-                      {formData?.time} - {formData?.endTime}
+                      {formData?.startTime} - {formData?.endTime}
                     </p>
                   </div>
                 </div>

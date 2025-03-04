@@ -21,7 +21,7 @@ export const AcmeLogo = () => {
 };
 
 export default function Nav() {
-  const firebase = useAuth();
+  const { userData, User, logOut } = useAuth();
   const pathname = usePathname();
 
   // Memoize navigation links
@@ -35,9 +35,9 @@ export default function Nav() {
     ],
     []
   );
-
+  console.log(userData, User);
   // Memoize the user state to prevent unnecessary re-renders
-  const user = useMemo(() => firebase?.user, [firebase?.user]);
+  const user = useMemo(() => User, [User]);
 
   return (
     <Navbar>
@@ -60,7 +60,7 @@ export default function Nav() {
       </NavbarContent>
 
       {/* Login Button for Guests */}
-      {!user && pathname !== "/login" && (
+      {!user && !userData && pathname !== "/login" && (
         <NavbarContent justify="end">
           <NavbarItem>
             <Button
@@ -84,18 +84,17 @@ export default function Nav() {
                 as="button"
                 className="transition-transform"
                 color="secondary"
-                name={user.displayName || "User"}
+                name={user?.displayName || "User"}
                 size="sm"
-                src={
-                  user.photoURL ||
-                  "https://i.pinimg.com/736x/c6/34/60/c6346030acb7a780af81803c84a06680.jpg"
-                }
+                src={user?.photoURL || userData?.photoURL}
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2">
                 <p className="font-semibold text-secondary-600">Signed in as</p>
-                <p className="font-semibold text-secondary-600">{user.email}</p>
+                <p className="font-semibold text-secondary-600">
+                  {user?.email}
+                </p>
               </DropdownItem>
               <>
                 {navData.map(({ name, value }) => (
@@ -108,7 +107,7 @@ export default function Nav() {
                 key="logout"
                 color="danger"
                 className="text-danger"
-                onPress={() => firebase?.logOut()}
+                onPress={() => logOut()}
               >
                 Log Out
               </DropdownItem>

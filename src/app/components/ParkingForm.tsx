@@ -25,18 +25,20 @@ export default function ParkingBookingForm({
   selectedParking,
   selectedSlot,
 }: any) {
+  const [showValidationWarning, setShowValidationWarning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    parkingId: selectedParking?._id,
     name: "",
-    vehicle: "",
-    phone: "",
+    vehicleNumber: "",
+    mobileNumber: "",
     vehicleType: "Two Wheeler",
-    time: "15:00",
-    duration: 4,
+    startTime: "15:00",
+    duration: 1,
     location: selectedParking?.name,
     slot: selectedSlot,
-    totalAmount: "$20",
+    totalAmount: "20",
     endTime: "19:00",
   });
 
@@ -44,15 +46,16 @@ export default function ParkingBookingForm({
     if (isOpen && selectedSlot) {
       setStep(1);
       setFormData({
+        parkingId: selectedParking?._id,
         name: "",
-        vehicle: "",
-        phone: "",
+        vehicleNumber: "",
+        mobileNumber: "",
         vehicleType: "Two Wheeler",
-        time: "15:00",
-        duration: 4,
+        startTime: "15:00",
+        duration: 1,
         location: selectedParking?.name,
         slot: selectedSlot,
-        totalAmount: "20",
+        totalAmount: `${selectedParking.pricePerHour}`,
         endTime: "19:00",
       });
     }
@@ -71,7 +74,7 @@ export default function ParkingBookingForm({
     const newTime = e.target.value;
     setFormData({
       ...formData,
-      time: newTime,
+      startTime: newTime,
       endTime: calculateEndTime(newTime, formData.duration),
     });
   };
@@ -80,8 +83,8 @@ export default function ParkingBookingForm({
     setFormData({
       ...formData,
       duration,
-      totalAmount: `${duration * 5}`,
-      endTime: calculateEndTime(formData.time, duration),
+      totalAmount: `${duration * selectedParking?.pricePerHour}`,
+      endTime: calculateEndTime(formData.startTime, duration),
     });
   };
 
@@ -96,18 +99,9 @@ export default function ParkingBookingForm({
 
   const qrRef = useRef(null);
 
-  const saveQRCode = async () => {
-    if (qrRef.current) {
-      const canvas = await html2canvas(qrRef.current);
-      const imgData = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = imgData;
-      link.download = "parking_ticket.png";
-      link.click();
-    }
-  };
   const handleCheckout = async () => {
     setLoading(true);
+    console.log({ formData });
     localStorage.setItem("bookingData", JSON.stringify(formData)); // Store booking details
     try {
       const response = await fetch("/api/checkout", {
@@ -183,7 +177,7 @@ export default function ParkingBookingForm({
                         </label>
                         <Input
                           type="time"
-                          value={formData.time}
+                          value={formData.startTime}
                           onChange={handleTimeChange}
                           className="w-full mt-2"
                         />
@@ -207,10 +201,11 @@ export default function ParkingBookingForm({
                           ))}
                         </div>
                         <p className="mt-4 text-lg font-semibold">
-                          Total Amount: ${formData.totalAmount}
+                          Total Amount: ₹{formData.totalAmount}
                         </p>
                         <p className="mt-2 text-lg">
-                          Parking Time: {formData.time} to {formData.endTime}
+                          Parking Time: {formData.startTime} to{" "}
+                          {formData.endTime}
                         </p>
                       </ModalBody>
                       <ModalFooter>
@@ -233,6 +228,7 @@ export default function ParkingBookingForm({
                       <ModalHeader>Add Details</ModalHeader>
                       <ModalBody>
                         <Input
+                          isRequired
                           type="text"
                           name="name"
                           placeholder="Enter Your Full Name"
@@ -240,24 +236,32 @@ export default function ParkingBookingForm({
                           className="w-full border rounded-lg p-2"
                         />
                         <Input
+                          isRequired
                           type="text"
-                          name="vehicle"
+                          name="vehicleNumber"
                           placeholder="Vehicle Number"
                           onChange={handleInputChange}
                           className="w-full border rounded-lg p-2 mt-2"
                         />
                         <Input
+                          isRequired
                           type="text"
-                          name="phone"
+                          name="mobileNumber"
                           placeholder="Mobile Number"
                           onChange={handleInputChange}
                           className="w-full border rounded-lg p-2 mt-2"
                         />
+                        {showValidationWarning && (
+                          <p className="text-red-600 font-semibold border-2 border-red-500/50 rounded-md p-2 text-center">
+                            Please fillup all fields
+                          </p>
+                        )}
                       </ModalBody>
 
                       <ModalFooter className="w-full">
                         <div className="flex w-full justify-between">
                           <Button
+                            type="submit"
                             color="primary"
                             variant="flat"
                             onPress={() => setStep((value) => value - 1)}
@@ -275,7 +279,15 @@ export default function ParkingBookingForm({
                             <Button
                               color="primary"
                               onPress={() => {
-                                setStep(3);
+                                if (
+                                  formData.mobileNumber &&
+                                  formData.name &&
+                                  formData.vehicleNumber
+                                ) {
+                                  setStep(3);
+                                } else {
+                                  setShowValidationWarning(true);
+                                }
                               }}
                             >
                               Checkout
@@ -293,7 +305,7 @@ export default function ParkingBookingForm({
                         <p className="font-medium">{formData.location}</p>
                         <p className="text-gray-600">Slot #{formData.slot}</p>
                         <p className="mt-2 font-bold text-xl">
-                          ${formData.totalAmount}
+                          ₹{formData.totalAmount}
                         </p>
                       </ModalBody>
 
@@ -325,111 +337,6 @@ export default function ParkingBookingForm({
                         </div>
                       </ModalFooter>
                     </>
-                  )}
-
-                  {step === 4 && (
-                    <div
-                      ref={qrRef}
-                      className="flex flex-col justify-center items-center"
-                    >
-                      <ModalHeader>Parking Ticket</ModalHeader>
-                      <QRCode
-                        value="https://your-parking-confirmation.com"
-                        className=" max-sm:w-32 max-sm:h-32 sm:w-42 sm:w-42 "
-                      />
-                      <ModalBody className="text-left">
-                        <p className="text-gray-600 text-center">
-                          Scan this QR on the scanner machine when you are in
-                          the parking lot.
-                        </p>
-                        <Card className=" shadow-xl rounded-xl p-4">
-                          <div className="space-y-3 text-gray-700">
-                            <div className="flex w-full ">
-                              <div className="w-1/2">
-                                <p className="text-sm  font-semibold">Name</p>
-                                <p className="text-lg font-bold">
-                                  {formData.name}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold">
-                                  Vehicle Number
-                                </p>
-                                <p className="text-lg font-bold">
-                                  {formData.vehicle}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex w-full ">
-                              <div className="w-1/2">
-                                <p className="text-sm  font-semibold">
-                                  Parking Area
-                                </p>
-                                <p className="text-lg font-bold">
-                                  {formData.location}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold">
-                                  Parking Slot
-                                </p>
-                                <p className="text-lg font-bold">
-                                  {formData.slot}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex w-full ">
-                              <div className="w-1/2">
-                                <p className="text-sm  font-semibold">
-                                  Duration
-                                </p>
-                                <p className="text-lg font-bold">
-                                  {formData.duration} Hours
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold">Time</p>
-                                <p className="text-lg font-bold">
-                                  {formData.time} To {formData.endTime}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex w-full ">
-                              <div className="w-1/2">
-                                <p className="text-sm  font-semibold">Date</p>
-                                <p className="text-lg font-bold">
-                                  Wed 08 Nov, 2023
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold">
-                                  Phone Number
-                                </p>
-                                <p className="text-lg font-bold">
-                                  {formData.phone}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-                      </ModalBody>
-
-                      <ModalFooter className="w-full">
-                        <Button
-                          color="danger"
-                          variant="light"
-                          onPress={onClose}
-                        >
-                          Close
-                        </Button>
-                        <Button color="primary" onPress={() => saveQRCode()}>
-                          Save
-                        </Button>
-                      </ModalFooter>
-                    </div>
                   )}
                 </>
               )}

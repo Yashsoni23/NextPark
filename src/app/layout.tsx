@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthContextProvider>
           <HeroUIProvider>
-            <ToastProvider placement="top-center" toastOffset={10} />
+            <ToastProvider placement="top-left" toastOffset={10} />
 
             <Nav />
             {children}
