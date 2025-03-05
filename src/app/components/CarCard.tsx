@@ -9,7 +9,7 @@ const CarCard = () => {
     <div className="relative sm:w-[25rem]  max-sm:h-1/4 px-5 ">
       <Image
         alt="HeroUI Album Cover"
-        className={`sm:m-5 absolute max-sm:w-48 z-10 sm:top-40 max-sm:top-28 h-max  max-sm:left-24 -left-32 ${
+        className={`sm:m-5 absolute max-sm:w-48 z-10 sm:top-40 max-sm:top-28   max-sm:left-24 -left-32 ${
           pathname === "/login" ? "scale-x-[-1] left-32" : "-left-32"
         }`}
         src="car.png"
