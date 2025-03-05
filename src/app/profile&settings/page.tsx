@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Input, Button, Card, Avatar, Spinner } from "@heroui/react";
+import { Input, Button, Card, Avatar, Spinner, Image } from "@heroui/react";
 import { useAuth } from "../context/firebase";
 
 const ProfileUpdate = () => {
-  const { user, uploadProfilePhoto, updateUserDetails, getUserDetails } =
+  const { user, uploadProfilePicture, updateUserDetails, getUserDetails } =
     useAuth();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,13 +27,29 @@ const ProfileUpdate = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    console.log("Updated photoURL:", photoURL);
+  }, [photoURL]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setPhoto(file);
+
+    if (file) {
+      const previewURL = URL.createObjectURL(file);
+      setPhotoURL(previewURL);
+    }
+  };
+
   const handleUpdate = async () => {
     if (!user?.uid) return;
     setLoading(true);
 
     let newPhotoURL = photoURL;
+
     if (photo) {
-      const response = await uploadProfilePhoto(user.uid, photo);
+      const response = await uploadProfilePicture(user.uid, photo);
+
       if (response.success) {
         newPhotoURL = response.photoURL;
         setPhotoURL(newPhotoURL);
@@ -52,32 +68,34 @@ const ProfileUpdate = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-6">
-      <Card className="p-6 max-w-lg w-full shadow-lg bg-white rounded-xl">
+    <div className="flex max-sm:flex-col gap-5 justify-center items-center min-h-screen  bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100/5 via-slate-300/60 to-slate-300/60 p-6">
+      <Card className=" p-5 flex flex-col gap-2">
+        <Image
+          isZoomed
+          sizes="xl"
+          src={photoURL || "/default-avatar.png"}
+          className="w-80 h-80 rounded border object-fit-xl-none"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          id="upload-photo"
+        />
+        <label
+          htmlFor="upload-photo"
+          className="cursor-pointer text-sm text-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Upload New Photo
+        </label>
+      </Card>
+      <Card className="p-6 py-12 max-w-lg w-full shadow-lg bg-white rounded-xl">
         <h2 className="text-2xl font-bold text-center text-secondary-600">
           Update Profile
         </h2>
 
         <div className="flex flex-col items-center gap-4 mt-4">
-          <Avatar
-            src={photoURL || "/default-avatar.png"}
-            className="w-24 h-24 rounded-full border"
-          />
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setPhoto(e.target.files?.[0] || null)}
-            className="hidden"
-            id="upload-photo"
-          />
-          <label
-            htmlFor="upload-photo"
-            className="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          >
-            Upload New Photo
-          </label>
-
           <Input
             label="Name"
             value={name}
@@ -91,6 +109,7 @@ const ProfileUpdate = () => {
             placeholder="Enter your phone number"
             type="tel"
           />
+          <Input label="Name" value={user?.email} isDisabled />
 
           <Button
             onPress={handleUpdate}

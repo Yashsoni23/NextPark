@@ -14,7 +14,7 @@ import {
 } from "@heroui/react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../context/firebase";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 export const AcmeLogo = () => {
   return <h1 className="font-bold text-secondary-600 text-3xl">NextPark</h1>;
@@ -25,19 +25,11 @@ export default function Nav() {
   const pathname = usePathname();
 
   // Memoize navigation links
-  const navLoggedInData = useMemo(
+  const navData = useMemo(
     () => [
       { name: "Home", value: "/" },
       { name: "My Bookings", value: "/my-bookings" },
       { name: "Profile & Settings", value: "/profile&settings" },
-      { name: "Contact Us", value: "/contact-us" },
-      { name: "FAQ", value: "/faq" },
-    ],
-    []
-  );
-  const navLoggedOutData = useMemo(
-    () => [
-      { name: "Home", value: "/" },
       { name: "Contact Us", value: "/contact-us" },
       { name: "FAQ", value: "/faq" },
     ],
@@ -55,31 +47,20 @@ export default function Nav() {
 
       {/* Visible on Large Screens */}
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        {user
-          ? navLoggedInData.map(({ name, value }) => {
-              return (
-                <NavbarItem key={value} isActive={pathname === value}>
-                  <Link
-                    color={pathname === value ? "secondary" : "foreground"}
-                    href={value}
-                  >
-                    {name}
-                  </Link>
-                </NavbarItem>
-              );
-            })
-          : navLoggedOutData.map(({ name, value }) => {
-              return (
-                <NavbarItem key={value} isActive={pathname === value}>
-                  <Link
-                    color={pathname === value ? "secondary" : "foreground"}
-                    href={value}
-                  >
-                    {name}
-                  </Link>
-                </NavbarItem>
-              );
-            })}
+        {navData.map(({ name, value }) => {
+          return (
+            user && (
+              <NavbarItem key={value} isActive={pathname === value}>
+                <Link
+                  color={pathname === value ? "secondary" : "foreground"}
+                  href={value}
+                >
+                  {name}
+                </Link>
+              </NavbarItem>
+            )
+          );
+        })}
       </NavbarContent>
 
       {/* Login Button for Guests */}
@@ -121,17 +102,11 @@ export default function Nav() {
                 <p className="font-semibold text-secondary-600">{user.email}</p>
               </DropdownItem>
               <>
-                {user
-                  ? navLoggedInData.map(({ name, value }) => (
-                      <DropdownItem className="sm:hidden" key={value}>
-                        <Link href={value}>{name}</Link>
-                      </DropdownItem>
-                    ))
-                  : navLoggedOutData.map(({ name, value }) => (
-                      <DropdownItem className="sm:hidden" key={value}>
-                        <Link href={value}>{name}</Link>
-                      </DropdownItem>
-                    ))}
+                {navData.map(({ name, value }) => (
+                  <DropdownItem className="sm:hidden" key={value}>
+                    <Link href={value}>{name}</Link>
+                  </DropdownItem>
+                ))}
               </>
               <DropdownItem
                 key="logout"

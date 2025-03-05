@@ -21,24 +21,23 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="relative flex justify-between  max-sm:flex-col items-center min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100/95 via-slate-300/40 to-slate-300/40 p-6 overflow-hidden">
+    <div className="relative flex gap-8 justify-between  max-sm:flex-col items-center max-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100/95 via-slate-300/40 to-slate-300/40 p-6 overflow-hidden">
       {/* Animated Background SVG */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2 }}
-        className=" inset-0 z-0 rounded-lg overflow-hidden   shadow-lg flex justify-center items-center"
+        className=" inset-0 z-0 rounded-lg overflow-hidden  max-sm:w-full bg-white shadow-lg flex justify-center items-center"
       >
         <Image
           src="/Contactus.svg"
           alt="Parking Background"
-          height={450}
-          className=" shadow-2xl rounded-md"
+          className=" shadow-2xl rounded-md sm:h-[450px] max-sm:h-[200px] "
         />
       </motion.div>
 
       {/* Contact Form Card */}
-      <Card className="relative z-10 w-[55%] max-w-2xl p-6 shadow-xl bg-white rounded-lg">
+      <Card className="relative z-10 sm:w-[55%] max-w-2xl p-6 shadow-xl bg-white rounded-lg">
         <h1 className="text-3xl font-bold text-secondary-600 text-center mb-4">
           Contact Us
         </h1>

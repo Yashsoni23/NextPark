@@ -73,6 +73,8 @@ export const AuthContextProvider = ({
         pathname === "/login" && router.push("/");
       } else {
         setUser(null);
+        setUserData(null);
+        router.push("/");
       }
       setLoading(false);
     });
@@ -148,10 +150,24 @@ export const AuthContextProvider = ({
   };
 
   const uploadProfilePicture = async (userId: string, file: File) => {
-    const storageRef = ref(storage, `profile_pictures/${userId}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
+    try {
+      const userRef = doc(db, "users", userId);
+
+      // 🔹 Upload new photo
+      const storageRef = ref(storage, `profilePictures/${userId}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // 🔹 Update Firestore with the new photo URL
+      await updateDoc(userRef, { photoURL: downloadURL });
+
+      return { success: true, photoURL: downloadURL };
+    } catch (error: any) {
+      console.error("Error uploading profile photo:", error);
+      return { success: false, message: error.message };
+    }
   };
+
   const uploadProfilePhoto = async (userId: string, file: File) => {
     try {
       const userRef = doc(db, "users", userId);
@@ -179,6 +195,17 @@ export const AuthContextProvider = ({
       return { success: true, photoURL: downloadURL };
     } catch (error: any) {
       console.error("Error uploading profile photo:", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+  const updateUserDetails = async (userId: string, updatedData: any) => {
+    try {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, updatedData);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error updating user details:", error);
       return { success: false, message: error.message };
     }
   };
@@ -221,6 +248,7 @@ export const AuthContextProvider = ({
         registerUser,
         getUserDetails,
         uploadProfilePhoto,
+        updateUserDetails,
       }}
     >
       {!loading && children}
