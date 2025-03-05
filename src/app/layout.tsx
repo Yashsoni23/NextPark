@@ -19,8 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html
+      lang="en"
+      className=" bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-slate-100 via-slate-300/60 to-slate-300/60"
+    >
+      <body className={`${inter.className} `}>
         <AuthContextProvider>
           <HeroUIProvider>
             <ToastProvider placement="top-left" toastOffset={10} />

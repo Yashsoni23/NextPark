@@ -10,8 +10,8 @@ function HomePage() {
   return (
     <div
       className={`px-5 ${
-        firebase?.user ? "" : "flex"
-      } justify-between rounded-md h-[80vh] `}
+        firebase?.user ? "" : "flex max-sm:flex-col"
+      } justify-between rounded-md h-[80vh]  bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100/5 via-slate-300/60 to-slate-300/60`}
     >
       {firebase?.user ? (
         <GoogleMapComponent />

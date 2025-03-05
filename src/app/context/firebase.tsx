@@ -38,6 +38,8 @@ interface UserType {
 // Create auth context
 const AuthContext = createContext({});
 
+export const db = getFirestore(app);
+
 // Make auth context available across the app
 export const useAuth = () => useContext<any>(AuthContext);
 
@@ -54,7 +56,6 @@ export const AuthContextProvider = ({
   const pathname = usePathname();
   const provider = new GoogleAuthProvider();
   const router = useRouter();
-  const db = getFirestore(app);
   const storage = getStorage(app);
 
   // Update the state depending on auth
@@ -68,8 +69,7 @@ export const AuthContextProvider = ({
           photoURL: user.photoURL,
         });
         console.log({ user });
-        getUserDetails(user.uid).then((data) => console.log(data));
-        // logOut();
+        getUserDetails(user.uid).then((data) => setUserData(data));
         pathname === "/login" && router.push("/");
       } else {
         setUser(null);
@@ -114,6 +114,12 @@ export const AuthContextProvider = ({
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       setUser({
+        email: user.email,
+        uid: user.uid,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      });
+      registerUser(user.uid, {
         email: user.email,
         uid: user.uid,
         displayName: user.displayName,

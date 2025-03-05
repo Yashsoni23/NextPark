@@ -9,12 +9,12 @@ const HeroInfoCard = () => {
   const firebase = useAuth();
   const isloggedin = firebase?.user;
   return (
-    <div className="flex flex-col gap-5 justify-center  w-1/2 py-20 pl-5">
-      <h1 className="font-bold text-4xl text-secondary-500 flex-col flex">
+    <div className="flex flex-col gap-5 justify-center max-sm:w-full sm:w-1/2 py-20 pl-5">
+      <h1 className="font-bold max-sm:text-2xl sm:text-4xl text-secondary-500 flex-col flex">
         {" "}
         Welcome to NextPark – Your Smart Parking Solution!
       </h1>
-      <h1 className="font-semibold text-2xl text-gray-800">
+      <h1 className="font-semibold max-sm:text-md sm:text-2xl text-gray-800">
         {" "}
         Finding a parking spot has never been easier! NextPark helps you locate,
         book, and manage parking spaces hassle-free.
